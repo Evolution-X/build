@@ -473,8 +473,6 @@ FIND_LEAVES_EXCLUDES := $(addprefix --prune=, $(SCAN_EXCLUDE_DIRS) .repo .git)
 
 include vendor/aosp/config/BoardConfigQcom.mk
 
--include vendor/extra/BoardConfigExtra.mk
-
 # The build system exposes several variables for where to find the kernel
 # headers:
 #   TARGET_DEVICE_KERNEL_HEADERS is automatically created for the current

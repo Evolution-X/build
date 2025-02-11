@@ -151,6 +151,23 @@ extra_vendor_symlinks = [
     },
 ]
 
+extra_vendor_symlinks = [
+    // Some vendors still haven't cleaned up all device specific directories under root!
+    // TODO(b/111434759, b/111287060) SoC specific hacks
+    {
+        target: "/vendor/lib/dsp",
+        name: "dsp",
+    },
+    {
+        target: "/mnt/vendor/persist",
+        name: "persist",
+    },
+    {
+        target: "/vendor/firmware_mnt",
+        name: "firmware",
+    },
+]
+
 filegroup {
     name: "generic_system_sign_key",
     srcs: [":avb_testkey_rsa4096"],

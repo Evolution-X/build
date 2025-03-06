@@ -289,7 +289,6 @@ PRODUCT_PACKAGES += \
     tombstoned \
     traced \
     traced_probes \
-    tradeinmode \
     tune2fs \
     uiautomator \
     uinput \

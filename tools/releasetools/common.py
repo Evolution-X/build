@@ -1364,7 +1364,18 @@ def MergeDynamicPartitionInfoDicts(framework_dict, vendor_dict):
 
 
 def PartitionMapFromTargetFiles(target_files_dir):
-  """Builds a map from partition -> path within an extracted target files directory."""
+  """Builds a map from partition -> path within an extracted target files
+  directory, a target-files zip on disk, or an already-open ZipFile.
+
+  Unlike its siblings (ExtractFromInputFile, WriteBytesToInputFile, etc.)
+  this function historically only supported an extracted directory. Callers
+  such as PartitionBuildProps._ReadPartitionPropFile pass the polymorphic
+  input_file (which may be a ZipFile, a path to a .zip, or a directory),
+  causing os.path.join()/os.path.exists() to be called with a ZipFile object
+  and raise "TypeError: expected str, bytes or os.PathLike object, not
+  ZipFile". Handle all three input kinds the same way the rest of this file
+  does.
+  """
   # Keep possible_subdirs in sync with build/make/core/board_config.mk.
   possible_subdirs = {
       "system": ["SYSTEM"],
@@ -1378,10 +1389,22 @@ def PartitionMapFromTargetFiles(target_files_dir):
       "odm_dlkm": ["ODM_DLKM", "VENDOR/odm_dlkm", "SYSTEM/vendor/odm_dlkm"],
       "system_dlkm": ["SYSTEM_DLKM", "SYSTEM/system_dlkm"],
   }
+
+  def _SubdirExists(subdir):
+    if isinstance(target_files_dir, zipfile.ZipFile):
+      names = target_files_dir.namelist()
+      return any(name.startswith(subdir + "/") for name in names)
+    elif zipfile.is_zipfile(target_files_dir):
+      with zipfile.ZipFile(target_files_dir, "r", allowZip64=True) as zfp:
+        names = zfp.namelist()
+        return any(name.startswith(subdir + "/") for name in names)
+    else:
+      return os.path.exists(os.path.join(target_files_dir, subdir))
+
   partition_map = {}
   for partition, subdirs in possible_subdirs.items():
     for subdir in subdirs:
-      if os.path.exists(os.path.join(target_files_dir, subdir)):
+      if _SubdirExists(subdir):
         partition_map[partition] = subdir
         break
   return partition_map

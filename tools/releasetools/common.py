@@ -1115,6 +1115,11 @@ class PartitionBuildProps(object):
     """
     data = ''
     partition_map = PartitionMapFromTargetFiles(input_file)
+    if name not in partition_map:
+      # Prebuilt partitions (BOARD_PREBUILT_VENDORIMAGE etc.) ship only
+      # IMAGES/<name>.img, without an extracted directory.
+      logger.warning("No directory for partition %s; skipping build.prop", name)
+      return data
     for prop_file in ['{}/etc/build.prop'.format(partition_map[name]),
                       '{}/build.prop'.format(partition_map[name])]:
       try:
